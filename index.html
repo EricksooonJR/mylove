@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat para Mi Novia y Yo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <h2>Chat Entre Tú y Yo K&E ❤️</h2>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <!-- Los mensajes se mostrarán aquí -->
+      </div>
+      <div class="chat-input">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Escribe un mensaje..."
+        />
+        <button onclick="sendMessage()">Enviar</button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        push,
+        onChildAdded,
+      } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDXSGgJou7Jks4r69yibZNF9X3iySN47f8",
+        authDomain: "nuestro-chat-5609b.firebaseapp.com",
+        projectId: "nuestro-chat-5609b",
+        storageBucket: "nuestro-chat-5609b.appspot.com",
+        messagingSenderId: "262615682559",
+        appId: "1:262615682559:web:80ff96559019f1593febca",
+        measurementId: "G-VTBSWK4JL7",
+      };
+
+      // Inicializar Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      // Elementos del DOM
+      const chatMessages = document.getElementById("chatMessages");
+      const messageInput = document.getElementById("messageInput");
+
+      // Función para enviar mensaje
+      window.sendMessage = function () {
+        const message = messageInput.value.trim();
+        if (message) {
+          const messageData = {
+            text: message,
+            timestamp: Date.now(),
+            sender: "Tú", // Cambia entre "Tú" o "Ella" según el remitente
+          };
+
+          push(ref(db, "messages"), messageData) // Guarda el mensaje en la base de datos
+            .then(() => {
+              messageInput.value = "";
+              messageInput.focus();
+            })
+            .catch((error) => {
+              console.error("Error al enviar el mensaje:", error);
+            });
+        }
+      };
+
+      // Función para agregar mensaje al chat
+      function addMessageToChat(messageData) {
+        const messageElement = document.createElement("div");
+        messageElement.classList.add(
+          "message",
+          messageData.sender === "Tú" ? "sent" : "received"
+        );
+        messageElement.textContent = messageData.text;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      // Escuchar nuevos mensajes en tiempo real
+      onChildAdded(ref(db, "messages"), (snapshot) => {
+        const messageData = snapshot.val();
+        addMessageToChat(messageData);
+      });
+    </script>
+  </body>
+</html>
